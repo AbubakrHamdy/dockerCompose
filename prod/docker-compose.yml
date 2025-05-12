@@ -1,0 +1,45 @@
+services:
+#  soqu:
+#    image: "abubakr/souq-1:s6"
+#    container_name: souq
+#    ports:
+#      - "8080:8080"
+#    deploy:
+#      replicas: 1
+#      resources:
+#        limits:
+#          cpus: "0.5"
+#          memory: 700M
+#    networks:
+#      - my-network
+
+  microservice:
+    image: "abubakr/microservice-practice:s6"
+    container_name: microservice
+    ports:
+      - "8084:8084"
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 700M
+    networks:
+      - my-network
+  configserver:
+    image: "abubakr/configserver:s6"
+    container_name: configserver
+    ports:
+      - "8071:8071"
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 700M
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    driver: bridge

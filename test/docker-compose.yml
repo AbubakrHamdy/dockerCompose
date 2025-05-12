@@ -1,0 +1,35 @@
+services:
+  rabbitmq:
+    image: "rabbitmq:4-management"
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    extends:
+      file: commons.yml
+      service: rabbitmq-config
+
+
+  configserver:
+    image: "dantecena/configserver:s6"
+    container_name: configserver
+    ports:
+      - "8071:8071"
+    extends:
+      file: commons.yml
+      service: configserver-config
+
+
+  microservice:
+    image: "dantecena/microservicepractice:s6"
+    container_name: microservice
+    ports:
+      - "8084:8084"
+    extends:
+      file: commons.yml
+      service: microservice-config-server
+
+
+networks:
+  my-network:
+    driver: bridge

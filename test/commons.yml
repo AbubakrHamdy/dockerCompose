@@ -1,0 +1,55 @@
+services:
+  network-deploy-service:
+    networks:
+      - my-network
+
+  microservice-base-config:
+    extends:
+      service: network-deploy-service
+    environment:
+      - spring.profiles.active=test
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 700M
+
+
+  microservice-config-server:
+    extends:
+      service: microservice-base-config
+    environment:
+      - spring.config.import=optional:configserver:http://configserver:8071
+    depends_on:
+      configserver:
+        condition: service_healthy
+
+
+  rabbitmq-config:
+    extends:
+      service: microservice-base-config
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "check_port_connectivity" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+
+  configserver-config:
+    extends:
+      service: microservice-base-config
+    healthcheck:
+      test: "curl --fail --silent localhost:8071/actuator/health/readiness | grep UP || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - my-network
+    environment:
+      - spring.rabbitmq.host=rabbitmq
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
