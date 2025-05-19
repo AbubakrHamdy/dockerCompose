@@ -1,4 +1,21 @@
 services:
+  eurekaserver:
+    image: "dantecena/eurekaserver:s8"
+    container_name: eurekaserver
+    ports:
+      - "8070:8070"
+    extends:
+      file: commons.yml
+      service: microservice-config-server
+    healthcheck:
+      test: "curl --fail --silent localhost:8070/actuator/health/readiness | grep UP || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+#    environment:
+#      - eureka.client.service-url.defaultZone=http://eureka-server:8070/eureka/
+
   accountdb:
     image: "mysql"
     container_name: accountdb
@@ -18,7 +35,7 @@ services:
       service: network-deploy-service
 
   configserver:
-    image: "dantecena/configserver:s7"
+    image: "dantecena/configserver:s9"
     container_name: configserver
     ports:
       - "8071:8071"
@@ -28,7 +45,7 @@ services:
 
 
   microservice:
-    image: "dantecena/microservicepractice:s7"
+    image: "dantecena/microservicepractice:s8"
     container_name: microservice
     ports:
       - "8084:8084"
@@ -39,8 +56,11 @@ services:
       - spring.datasource.url=jdbc:mysql://accountdb:3306/accountdb
       - spring.datasource.username=root
       - spring.datasource.password=root
+      - eureka.client.service-url.defaultZone=http://eurekaserver:8070/eureka
     depends_on:
       accountdb:
+        condition: service_healthy
+      eurekaserver:
         condition: service_healthy
 
 networks:
